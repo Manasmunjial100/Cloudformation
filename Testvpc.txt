@@ -1,0 +1,145 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "Template for VPC and subnet",
+    "Metadata": {
+
+    },
+    "Parameters": {
+        "VpcCidrBlock": {
+            "Description": "select cidr for TestVPC",
+            "Type": "String",
+            "Default": "10.0.0.0/16"
+          },
+        "Subnet1CidrBlock": {
+              "Description": "select cidr for Public Subnet for testvpc",
+              "Type": "String"
+          },
+        "Subnet2CidrBlock": {
+              "Description": "select cidr for subnet",
+              "Type": "String"
+          },
+        "Subnet3CidrBlock": {
+              "Description": "select cidr for subnet",
+              "Type": "String"
+          },
+        "AZs": {
+              "Description": "choose AZ for Public Subnet Test",
+              "Type": "AWS::EC2::AvailabilityZone::Name"
+
+          },
+        "AZ2": {
+              "Description": "choose AZ for Private SUbnet1 Test",
+              "Type": "AWS::EC2::AvailabilityZone::Name"
+
+          },
+        "AZ3": {
+              "Description": "choose AZ for Private SUbnet2 Test",
+              "Type": "AWS::EC2::AvailabilityZone::Name"
+
+          }
+
+    },
+    "Mappings": {
+
+    },
+    "Conditions": {
+
+    },
+    "Resources": {
+      "TestVPC": {
+        "Type": "AWS::EC2::VPC",
+        "Properties": {
+          "CidrBlock": { "Ref": "VpcCidrBlock" },
+          "Tags": [{ "Key": "Name", "Value":  "TestVPC" }]
+        }
+      },
+      "PublicSubnetTest": {
+        "Type": "AWS::EC2::Subnet",
+        "Properties": {
+          "AvailabilityZone": { "Ref": "AZs" },
+          "VpcId": { "Ref": "TestVPC" },
+          "CidrBlock": { "Ref": "Subnet1CidrBlock" },
+          "MapPublicIpOnLaunch": true,
+          "Tags": [{ "Key": "Name", "Value":  "PublicSubnetTest" }]
+        }
+      },
+      "PrivateSubnetTest": {
+        "Type": "AWS::EC2::Subnet",
+        "Properties": {
+          "AvailabilityZone": { "Ref": "AZ2" },
+          "VpcId": { "Ref": "TestVPC" },
+          "CidrBlock": { "Ref": "Subnet2CidrBlock" },
+          "Tags": [{ "Key": "Name", "Value":  "PrivateSubnetTest" }]
+        }
+      },
+      "PrivateSubnet2Test": {
+        "Type": "AWS::EC2::Subnet",
+        "Properties": {
+          "AvailabilityZone": { "Ref": "AZ3" },
+          "VpcId": { "Ref": "TestVPC" },
+          "CidrBlock": { "Ref": "Subnet3CidrBlock" },
+          "Tags": [{ "Key": "Name", "Value":  "PrivateSubnet3Test" }]
+        }
+      },
+      "InternetGatewayTest": {
+        "Type": "AWS::EC2::InternetGateway",
+        "Properties": {
+          "Tags": [{ "Key": "Name", "Value":  "InternetGateway-Test" }]
+        }
+      },
+      "AttachGateway": {
+        "Type": "AWS::EC2::VPCGatewayAttachment",
+        "Properties": {
+          "VpcId": { "Ref": "TestVPC" },
+          "InternetGatewayId": { "Ref": "InternetGatewayTest" }
+        }
+      },
+      "PublicRouteTestVPC": {
+        "Type": "AWS::EC2::RouteTable",
+        "Properties": {
+          "VpcId": { "Ref": "TestVPC" },
+          "Tags": [{ "Key": "Name", "Value":  "PublicRoute-Test" }]
+        }
+      },
+      "PublicRoute": {
+        "Type": "AWS::EC2::Route",
+        "Properties": {
+          "RouteTableId": { "Ref": "PublicRouteTestVPC" },
+          "DestinationCidrBlock": "0.0.0.0/0",
+          "GatewayId": { "Ref": "InternetGatewayTest" }
+        }
+      },
+      "PublicSubnetAssociation": {
+        "Type": "AWS::EC2::SubnetRouteTableAssociation",
+        "Properties": {
+          "SubnetId": { "Ref": "PublicSubnetTest" },
+          "RouteTableId": { "Ref": "PublicRouteTestVPC" }
+        }
+      },
+      "PrivateRouteSubnet": {
+        "Type": "AWS::EC2::RouteTable",
+        "Properties": {
+          "VpcId": { "Ref": "TestVPC" },
+          "Tags": [{ "Key": "Name", "Value":  "PrivateRoute" }]
+        }
+      },
+      "PrivateSubnetAssociation": {
+        "Type": "AWS::EC2::SubnetRouteTableAssociation",
+        "Properties": {
+        "SubnetId": { "Ref": "PrivateSubnetTest"},
+          "RouteTableId": { "Ref": "PrivateRouteSubnet" }
+        }
+      },
+      "PrivateSubnet2Association": {
+        "Type": "AWS::EC2::SubnetRouteTableAssociation",
+        "Properties": {
+        "SubnetId": { "Ref": "PrivateSubnet2Test"},
+          "RouteTableId": { "Ref": "PrivateRouteSubnet" }
+        }
+      }
+
+    },
+    "Outputs": {
+
+    }
+}
